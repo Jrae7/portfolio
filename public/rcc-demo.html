@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Renewal Command Center — Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/gridjs.umd.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/theme/mermaid.min.css">
+<style>
+:root{color-scheme:light;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:#F2EDE4;font-family:"Franklin Gothic Book",Arial,sans-serif;font-size:14px;color:#333;line-height:1.5;}
+.wrap{max-width:100%;padding:20px 24px;}
+
+/* Header */
+.hdr{background:#3B2845;padding:22px 28px 20px;border-radius:16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:20px;}
+.hdr-left{flex:1;}
+.hdr h1{font-size:22px;font-weight:700;color:#fff;font-family:"Franklin Gothic Medium",Arial,sans-serif;letter-spacing:-.3px;}
+.hdr-meta{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;display:flex;align-items:center;gap:6px;}
+.demo-badge{background:rgba(245,130,32,.25);border:1px solid rgba(245,130,32,.5);color:#F58220;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.5px;}
+.hdr-window{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.hdr-window-lbl{font-size:11px;color:rgba(255,255,255,.5);font-weight:600;white-space:nowrap;}
+.hdr-window-sel{font-family:inherit;font-size:12px;padding:4px 24px 4px 8px;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.1);color:#fff;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23F58220'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;cursor:pointer;}
+.hdr-window-sel:disabled{opacity:.4;cursor:not-allowed;}
+.hdr-window-sel option{background:#3B2845;color:#fff;}
+.hdr-btn{font-family:inherit;font-size:12px;padding:4px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;}
+.hdr-btn:hover{background:rgba(255,255,255,.2);}
+.hdr-right img{height:48px;display:block;pointer-events:none;filter:brightness(0) invert(1);opacity:.85;}
+
+/* Tab bar */
+.tab-bar{background:#fff;border-radius:12px;padding:8px 12px;margin-bottom:16px;display:flex;align-items:center;gap:6px;box-shadow:0 2px 12px rgba(1,30,65,.07);}
+.tab-btn{font-family:inherit;font-size:13px;padding:6px 14px;border-radius:8px;border:none;background:transparent;color:#666;cursor:pointer;font-weight:500;}
+.tab-btn:hover{background:#F2EDE4;color:#3B2845;}
+.tab-btn.active{background:#F58220;color:#fff;font-weight:700;}
+
+/* KPI Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px;}
+.card{background:#fff;border-radius:12px;padding:14px 16px;border-top:3px solid #DDD8CE;box-shadow:0 2px 12px rgba(1,30,65,.07);}
+.card .lbl{font-size:11px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
+.card .val{font-size:22px;font-weight:700;color:#3B2845;line-height:1.1;}
+.card .sub{font-size:11px;color:#999;margin-top:3px;}
+.card.orange{border-top-color:#F58220;}.card.orange .val{color:#F58220;}
+.card.red{border-top-color:#B03A2E;}.card.red .val{color:#B03A2E;}
+.card.green{border-top-color:#2D7A3E;}.card.green .val{color:#2D7A3E;}
+.card.amber{border-top-color:#D97706;}.card.amber .val{color:#D97706;}
+
+/* Charts */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.chart-box{background:#fff;border-radius:12px;padding:16px 20px;box-shadow:0 2px 12px rgba(1,30,65,.07);}
+.chart-box h3{margin:0 0 10px;font-size:12px;color:#3B2845;font-weight:700;font-family:"Franklin Gothic Medium",Arial,sans-serif;text-transform:uppercase;letter-spacing:.5px;}
+.chart-wrap{height:220px;position:relative;}
+
+/* Filters */
+.filters{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+.filters label{font-size:12px;color:#999;font-weight:600;}
+.filters select{font-family:inherit;font-size:12px;padding:5px 28px 5px 7px;border:1px solid #DDD8CE;border-radius:4px;background:#fff;color:#333;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23F58220'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+.flt-btn{font-family:inherit;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer;border:1px solid #DDD8CE;background:#FAF7F2;color:#333;font-weight:600;}
+.flt-btn.active{background:#B03A2E;border-color:#B03A2E;color:#fff;}
+
+/* Table */
+.tbl-box{background:#fff;border-radius:12px;padding:8px;box-shadow:0 2px 12px rgba(1,30,65,.07);}
+.gridjs-wrapper{box-shadow:none!important;}
+.gridjs-table{font-size:12px!important;}
+.gridjs-th{background:#3B2845!important;color:#fff!important;font-weight:600!important;font-size:11px!important;font-family:"Franklin Gothic Medium",Arial,sans-serif!important;text-transform:uppercase;letter-spacing:.4px;}
+.gridjs-th-content{color:#fff!important;}
+.gridjs-td{padding:7px 9px!important;vertical-align:middle!important;}
+.gridjs-tr:hover{background:#FAF7F2!important;}
+button.gridjs-sort{background-color:transparent!important;border:none!important;cursor:pointer!important;}
+button.gridjs-sort-neutral{opacity:.45!important;filter:brightness(0) invert(1)!important;}
+button.gridjs-sort-asc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M4 0L0 8h8z' fill='%23F58220'/%3E%3C/svg%3E")!important;background-position-y:center!important;background-size:10px!important;}
+button.gridjs-sort-desc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M0 0h8L4 8z' fill='%23F58220'/%3E%3C/svg%3E")!important;background-position-y:center!important;background-size:10px!important;}
+
+/* Badges */
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.3px;white-space:nowrap;}
+.badge-overdue{background:#FEE2E2;color:#7F1D1D;}
+.badge-t30{background:#FEF3C7;color:#92400E;}
+.badge-t60{background:#FFF7ED;color:#C2410C;}
+.badge-t90{background:#EAF5F8;color:#5A3F6B;}
+.badge-t120{background:#F0FDF4;color:#166534;}
+.badge-t145{background:#F0FDF4;color:#166534;}
+.badge-early{background:#DDD8CE;color:#999;}
+.badge-behind{background:#FEE2E2;color:#B03A2E;}
+.badge-ontrack{background:#DCFCE7;color:#2D7A3E;}
+.badge-na{background:#DDD8CE;color:#999;}
+.badge-risk{background:#FEE2E2;color:#B03A2E;}
+.badge-ar{background:#FEF3C7;color:#92400E;}
+.badge-ok{background:#DCFCE7;color:#2D7A3E;}
+.conf-committed{background:#DCFCE7;color:#166534;}
+.conf-ontrack{background:#C8E6ED;color:#5A3F6B;}
+.conf-watch{background:#FEF3C7;color:#D97706;}
+.conf-atrisk{background:#FEE2E2;color:#B03A2E;}
+
+/* Footer */
+.foot{margin-top:20px;padding-top:12px;border-top:1px solid #DDD8CE;color:#999;font-size:11px;font-style:italic;text-align:center;}
+
+/* Dark mode */
+html.dark,html.dark body{background:#1a0d24;color:#eef2fa;}
+html.dark .hdr{background:#110820;box-shadow:0 0 45px rgba(245,130,32,.18),0 4px 28px rgba(0,0,0,.55);}
+html.dark .tab-bar,html.dark .chart-box,html.dark .tbl-box{background:#2a1535;box-shadow:0 2px 12px rgba(0,0,0,.4);}
+html.dark .card{background:#3B2845;border:1px solid rgba(255,255,255,.07);}
+html.dark .card .lbl,.dark .card .sub{color:#C4B0D8;}
+html.dark .card .val{color:#fff;}
+html.dark .card.orange .val{color:#F58220;}
+html.dark .card.red .val{color:#e06060;}
+html.dark .card.green .val{color:#4caf70;}
+html.dark .card.amber .val{color:#f0a840;}
+html.dark .chart-box h3{color:#fff;}
+html.dark .tab-btn{color:#C4B0D8;}
+html.dark .tab-btn:hover{color:#F58220;background:#3B2845;}
+html.dark .tab-btn.active{background:#F58220;color:#fff;}
+html.dark .filters label{color:#C4B0D8;}
+html.dark .filters select{background:#3B2845;border-color:#5a3f6b;color:#eef2fa;}
+html.dark .flt-btn{background:#3B2845;border-color:#5a3f6b;color:#eef2fa;}
+html.dark .flt-btn.active{background:#B03A2E;border-color:#B03A2E;color:#fff;}
+html.dark .tbl-box .gridjs-wrapper{background:#2a1535!important;}
+html.dark .gridjs-table{background:#2a1535!important;}
+html.dark .gridjs-td{color:#eef2fa!important;border-bottom:1px solid #4a2e5c!important;}
+html.dark .gridjs-tr:hover{background:#4a3558!important;}
+html.dark .gridjs-search input{background:#3B2845;border-color:#5a3f6b;color:#eef2fa;}
+html.dark .foot{border-top-color:#4a2e5c;color:#C4B0D8;}
+html.dark .hdr-window-sel{background-color:#2a1535;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hdr">
+  <div class="hdr-left">
+    <h1>Renewal Command Center</h1>
+    <div class="hdr-meta">
+      <span id="metaText">Demo Mode · Synthetic Data</span>
+      <span class="demo-badge">DEMO</span>
+    </div>
+    <div class="hdr-window">
+      <span class="hdr-window-lbl">Pipeline Window</span>
+      <select class="hdr-window-sel" id="windowSel" onchange="setWindow(this.value)">
+        <option value="30">T-30 (30 days)</option>
+        <option value="60">T-60 (60 days)</option>
+        <option value="90" selected>T-90 (90 days)</option>
+        <option value="120">T-120 (120 days)</option>
+        <option value="180">T-180 (180 days)</option>
+        <option value="365">T-365 (1 year)</option>
+      </select>
+      <span class="hdr-window-lbl" style="margin-left:8px;">Quarter</span>
+      <select class="hdr-window-sel" id="quarterSel" onchange="setQuarter(this.value)"></select>
+      <button class="hdr-btn" id="darkBtn" onclick="toggleDark()">🌙 Dark</button>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/1200px-Amazon_logo.svg.png" alt="Demo Corp" style="height:36px;filter:brightness(0) invert(1);opacity:.7;">
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" id="tabCS">👥 CS Leadership</button>
+</div>
+
+<div id="content"></div>
+
+<div class="foot">Renewal Command Center · Demo Build · Synthetic data only — no real customer information</div>
+</div>
+
+<script>
+// ── Dark mode ──────────────────────────────────────────────────────────────
+(function(){ if(localStorage.getItem("demoDark")==="1") document.documentElement.classList.add("dark"); })();
+const CHART_COLOR_DARK="#F2EDE4", CHART_COLOR_LIGHT="#555";
+function applyChartDefaults(){ Chart.defaults.color=document.documentElement.classList.contains("dark")?CHART_COLOR_DARK:CHART_COLOR_LIGHT; }
+function toggleDark(){
+  const on=document.documentElement.classList.toggle("dark");
+  localStorage.setItem("demoDark",on?"1":"0");
+  document.getElementById("darkBtn").textContent=on?"☀ Light":"🌙 Dark";
+  applyChartDefaults();
+  render();
+}
+
+// ── Window / Quarter ───────────────────────────────────────────────────────
+let DAYS_WINDOW=parseInt(localStorage.getItem("demoDaysWindow")||"90",10);
+function setWindow(v){ localStorage.setItem("demoDaysWindow",v); DAYS_WINDOW=parseInt(v); render(); }
+function setQuarter(v){
+  localStorage.setItem("demoQuarter",v);
+  document.getElementById("windowSel").disabled=!!v;
+  render();
+}
+function getActiveQuarterRange(){
+  const s=localStorage.getItem("demoQuarter")||"";
+  if(!s) return null;
+  const [q,yr]=s.split(":").map(Number);
+  const starts=[0,3,6,9], m=starts[q-1], endM=m+2;
+  const pad=n=>String(n).padStart(2,"0");
+  return {start:`${yr}-${pad(m+1)}-01`,end:`${yr}-${pad(endM+1)}-${new Date(yr,endM+1,0).getDate()}`};
+}
+function populateQuarterDropdown(){
+  const sel=document.getElementById("quarterSel"); if(!sel) return;
+  const now=new Date(), curQ=Math.floor(now.getMonth()/3)+1, curYr=now.getFullYear();
+  sel.add(new Option("All (rolling)",""));
+  for(let i=-2;i<=3;i++){
+    let q=curQ+i, yr=curYr;
+    while(q<1){q+=4;yr--;} while(q>4){q-=4;yr++;}
+    sel.add(new Option(`Q${q} ${String(yr).slice(2)}`,`${q}:${yr}`));
+  }
+  const saved=localStorage.getItem("demoQuarter")||"";
+  sel.value=saved;
+  document.getElementById("windowSel").disabled=!!saved;
+}
+
+// ── Fake Data ──────────────────────────────────────────────────────────────
+// All dates relative to 2026-07-21 (today in demo)
+const TODAY = new Date("2026-07-21");
+function daysFrom(d){ return new Date(TODAY.getTime()+d*86400000).toISOString().slice(0,10); }
+
+const MANAGER_MAP = {
+  "Alex Rivera":  ["Sarah Chen","Marcus Webb","Jordan Ellis"],
+  "Dana Foster":  ["Priya Patel","Tyler Brooks","Kayla Morrison"],
+  "Chris Morgan": ["Leila Okafor","Darnell Hughes","Mei Tanaka"],
+};
+const MANAGER_NAMES=new Set(Object.keys(MANAGER_MAP));
+
+const RAW_RENEWALS = [
+  // Overdue
+  {id:"001",account:"Meridian Logistics",stage:"Negotiation",close:daysFrom(-12),arr:148000,product:"CoreSuite",owner:"Sarah Chen",atRisk:true,overdueAR:22400,upliftI:5,upliftR:3.1},
+  {id:"002",account:"Summit Healthcare",stage:"Proposal",close:daysFrom(-5),arr:92000,product:"ServiceDesk",owner:"Marcus Webb",atRisk:false,overdueAR:0,upliftI:3,upliftR:0},
+  {id:"003",account:"Apex Distributors",stage:"Requirements",close:daysFrom(-18),arr:61500,product:"InventoryPro",owner:"Jordan Ellis",atRisk:true,overdueAR:8750,upliftI:0,upliftR:0},
+
+  // T-30
+  {id:"004",account:"NovaTech Industries",stage:"Sales Complete",close:daysFrom(8),arr:210000,product:"CoreSuite",owner:"Priya Patel",atRisk:false,overdueAR:0,upliftI:7,upliftR:7.2},
+  {id:"005",account:"Cascade Retail Group",stage:"Negotiation",close:daysFrom(14),arr:87500,product:"PayEngine",owner:"Sarah Chen",atRisk:false,overdueAR:0,upliftI:5,upliftR:4.8},
+  {id:"006",account:"Vantage Financial",stage:"Proposal",close:daysFrom(22),arr:335000,product:"CoreSuite",owner:"Tyler Brooks",atRisk:true,overdueAR:41200,upliftI:8,upliftR:2.1},
+  {id:"007",account:"Ironclad Manufacturing",stage:"Procurement",close:daysFrom(18),arr:123000,product:"FleetTrack",owner:"Kayla Morrison",atRisk:false,overdueAR:0,upliftI:4,upliftR:4.0},
+  {id:"008",account:"Bluewave Staffing",stage:"Discovery",close:daysFrom(25),arr:44000,product:"ServiceDesk",owner:"Leila Okafor",atRisk:false,overdueAR:0,upliftI:3,upliftR:0},
+
+  // T-60
+  {id:"009",account:"Pinnacle Energy",stage:"Negotiation",close:daysFrom(38),arr:278000,product:"CoreSuite",owner:"Darnell Hughes",atRisk:false,overdueAR:0,upliftI:6,upliftR:5.9},
+  {id:"010",account:"Harvest Agricultural",stage:"Proposal",close:daysFrom(45),arr:96000,product:"InventoryPro",owner:"Mei Tanaka",atRisk:false,overdueAR:0,upliftI:5,upliftR:4.2},
+  {id:"011",account:"Sterling Logistics",stage:"Requirements",close:daysFrom(52),arr:167000,product:"FleetTrack",owner:"Marcus Webb",atRisk:true,overdueAR:15600,upliftI:4,upliftR:1.0},
+  {id:"012",account:"Crestview Hotels",stage:"Proposal",close:daysFrom(41),arr:74000,product:"ServiceDesk",owner:"Priya Patel",atRisk:false,overdueAR:0,upliftI:5,upliftR:5.1},
+  {id:"013",account:"Quantum Analytics",stage:"Negotiation",close:daysFrom(57),arr:412000,product:"CoreSuite",owner:"Sarah Chen",atRisk:false,overdueAR:0,upliftI:10,upliftR:9.8},
+  {id:"014",account:"Bridgeway Construction",stage:"Discovery",close:daysFrom(49),arr:38500,product:"InventoryPro",owner:"Tyler Brooks",atRisk:true,overdueAR:0,upliftI:0,upliftR:0},
+
+  // T-90
+  {id:"015",account:"Magellan Pharma",stage:"Requirements",close:daysFrom(68),arr:524000,product:"CoreSuite",owner:"Jordan Ellis",atRisk:false,overdueAR:0,upliftI:8,upliftR:7.5},
+  {id:"016",account:"Frontier Telecom",stage:"Discovery",close:daysFrom(75),arr:189000,product:"PayEngine",owner:"Kayla Morrison",atRisk:false,overdueAR:0,upliftI:5,upliftR:0},
+  {id:"017",account:"Amber Ridge Schools",stage:"Proposal",close:daysFrom(82),arr:55000,product:"ServiceDesk",owner:"Leila Okafor",atRisk:false,overdueAR:0,upliftI:3,upliftR:3.0},
+  {id:"018",account:"Pacific Import Co.",stage:"Requirements",close:daysFrom(70),arr:143000,product:"InventoryPro",owner:"Darnell Hughes",atRisk:true,overdueAR:19800,upliftI:5,upliftR:2.0},
+  {id:"019",account:"Northgate Insurance",stage:"Discovery",close:daysFrom(88),arr:301000,product:"CoreSuite",owner:"Mei Tanaka",atRisk:false,overdueAR:0,upliftI:7,upliftR:0},
+
+  // T-120
+  {id:"020",account:"Solaris Tech Partners",stage:"Discovery",close:daysFrom(98),arr:228000,product:"CoreSuite",owner:"Sarah Chen",atRisk:false,overdueAR:0,upliftI:6,upliftR:0},
+  {id:"021",account:"Redwood Property Mgmt",stage:"Discovery",close:daysFrom(105),arr:77000,product:"ServiceDesk",owner:"Marcus Webb",atRisk:false,overdueAR:0,upliftI:4,upliftR:0},
+  {id:"022",account:"Cypress Medical Group",stage:"Requirements",close:daysFrom(112),arr:388000,product:"CoreSuite",owner:"Tyler Brooks",atRisk:false,overdueAR:0,upliftI:9,upliftR:8.0},
+  {id:"023",account:"Oakdale Freight",close:daysFrom(118),stage:"Discovery",arr:62000,product:"FleetTrack",owner:"Priya Patel",atRisk:false,overdueAR:0,upliftI:3,upliftR:0},
+
+  // T-145
+  {id:"024",account:"Harbor Point Retail",stage:"Discovery",close:daysFrom(128),arr:115000,product:"CoreSuite",owner:"Jordan Ellis",atRisk:false,overdueAR:0,upliftI:5,upliftR:0},
+  {id:"025",account:"Coltrane Financial",stage:"Discovery",close:daysFrom(135),arr:245000,product:"PayEngine",owner:"Kayla Morrison",atRisk:false,overdueAR:0,upliftI:6,upliftR:0},
+  {id:"026",account:"Willow Springs Health",stage:"Discovery",close:daysFrom(141),arr:98000,product:"ServiceDesk",owner:"Leila Okafor",atRisk:false,overdueAR:0,upliftI:4,upliftR:0},
+
+  // Early (beyond T-145)
+  {id:"027",account:"Granite Systems",stage:"Discovery",close:daysFrom(162),arr:174000,product:"CoreSuite",owner:"Darnell Hughes",atRisk:false,overdueAR:0,upliftI:5,upliftR:0},
+  {id:"028",account:"Eclipse Media Group",stage:"Discovery",close:daysFrom(178),arr:83000,product:"ServiceDesk",owner:"Mei Tanaka",atRisk:false,overdueAR:0,upliftI:3,upliftR:0},
+  {id:"029",account:"Tundra Mining Corp",stage:"Discovery",close:daysFrom(195),arr:312000,product:"FleetTrack",owner:"Sarah Chen",atRisk:false,overdueAR:0,upliftI:7,upliftR:0},
+  {id:"030",account:"Delta Logistics Hub",stage:"Discovery",close:daysFrom(210),arr:156000,product:"InventoryPro",owner:"Marcus Webb",atRisk:false,overdueAR:0,upliftI:4,upliftR:0},
+
+  // Closed Won (this quarter)
+  {id:"031",account:"Prism Consulting",stage:"Closed Won",close:daysFrom(-30),arr:195000,product:"CoreSuite",owner:"Priya Patel",atRisk:false,overdueAR:0,upliftI:8,upliftR:8.1},
+  {id:"032",account:"Keystone Retailers",stage:"Closed Won",close:daysFrom(-45),arr:88000,product:"PayEngine",owner:"Tyler Brooks",atRisk:false,overdueAR:0,upliftI:5,upliftR:5.0},
+  {id:"033",account:"Ascend Aviation",stage:"Closed Won",close:daysFrom(-12),arr:274000,product:"CoreSuite",owner:"Jordan Ellis",atRisk:false,overdueAR:0,upliftI:7,upliftR:7.3},
+];
+
+// ── Pipeline filtering ─────────────────────────────────────────────────────
+function getWindowedRenewals(){
+  const qr=getActiveQuarterRange();
+  const todayStr=TODAY.toISOString().slice(0,10);
+  if(qr){
+    return RAW_RENEWALS.filter(r=>r.close>=qr.start&&r.close<=qr.end);
+  }
+  const futureCut=daysFrom(DAYS_WINDOW);
+  return RAW_RENEWALS.filter(r=>{
+    if(r.stage==="Closed Won") return r.close>=daysFrom(-90)&&r.close<=todayStr;
+    if(r.stage==="Sales Complete") return r.close>=todayStr&&r.close<=futureCut;
+    if(r.close<todayStr) return r.close>=daysFrom(-90); // overdue open
+    return r.close<=futureCut;
+  });
+}
+
+// ── Milestone logic (mirrors real dashboard) ───────────────────────────────
+function daysUntil(d){ const t=new Date(TODAY); t.setHours(0,0,0,0); return Math.round((new Date(d+"T00:00:00")-t)/86400000); }
+function getMilestone(cd){
+  const d=daysUntil(cd);
+  if(d<0)  return {label:"OVERDUE",level:0,css:"badge-overdue"};
+  if(d<=30) return {label:"T-30",level:1,css:"badge-t30"};
+  if(d<=60) return {label:"T-60",level:2,css:"badge-t60"};
+  if(d<=90) return {label:"T-90",level:3,css:"badge-t90"};
+  if(d<=120)return {label:"T-120",level:4,css:"badge-t120"};
+  if(d<=145)return {label:"T-145",level:5,css:"badge-t145"};
+  return {label:"Early",level:6,css:"badge-early"};
+}
+const STAGE_RANK={Discovery:0,Requirements:1,Proposal:2,Negotiation:3,Procurement:4,"Sales Complete":5};
+const MIN_STAGE={0:5,1:4,2:3,3:2,4:1,5:0,6:0};
+function getPace(cd,stage){
+  const m=getMilestone(cd), r=STAGE_RANK[stage]??-1;
+  if(r<0||m.level===0) return {label:"N/A",css:"badge-na",behind:false};
+  return r<MIN_STAGE[m.level]
+    ? {label:"Behind",css:"badge-behind",behind:true}
+    : {label:"On Track",css:"badge-ontrack",behind:false};
+}
+function getConfidence(r){
+  const isWon=r.stage==="Closed Won", isDone=r.stage==="Sales Complete";
+  if(isWon)  return {label:"Closed Won",tier:"committed",css:"conf-committed"};
+  if(isDone) return {label:"Committed",tier:"committed",css:"conf-committed"};
+  if(r.atRisk||r.overdueAR>0) return {label:"At Risk",tier:"atrisk",css:"conf-atrisk"};
+  const p=getPace(r.close,r.stage);
+  if(p.behind) return {label:"Watch",tier:"watch",css:"conf-watch"};
+  const m=getMilestone(r.close);
+  if(m.level>=3) return {label:"On Track",tier:"ontrack",css:"conf-ontrack"};
+  return {label:"Watch",tier:"watch",css:"conf-watch"};
+}
+
+// ── Enrich ─────────────────────────────────────────────────────────────────
+function enrich(renewals){
+  return renewals.map(r=>({
+    ...r,
+    _milestone: getMilestone(r.close),
+    _pace:      getPace(r.close, r.stage),
+    _confidence:getConfidence(r),
+    _behind:    getPace(r.close,r.stage).behind,
+    _daysUntil: daysUntil(r.close),
+  }));
+}
+
+// ── Chart helpers ──────────────────────────────────────────────────────────
+const _charts={};
+function mkChart(id,cfg){
+  if(_charts[id]){_charts[id].destroy();delete _charts[id];}
+  const canvas=document.getElementById(id); if(!canvas)return null;
+  const c=new Chart(canvas,cfg); _charts[id]=c; return c;
+}
+function mkStripes(fg,bg){
+  const cv=document.createElement("canvas"); cv.width=12;cv.height=12;
+  const x=cv.getContext("2d");
+  x.fillStyle=bg; x.fillRect(0,0,12,12);
+  x.strokeStyle=fg; x.lineWidth=3; x.beginPath(); x.moveTo(0,12); x.lineTo(12,0); x.stroke();
+  return document.createElement("canvas").getContext("2d").createPattern?
+    (()=>{const c2=document.createElement("canvas");c2.width=12;c2.height=12;const x2=c2.getContext("2d");x2.fillStyle=bg;x2.fillRect(0,0,12,12);x2.strokeStyle=fg;x2.lineWidth=3;x2.beginPath();x2.moveTo(0,12);x2.lineTo(12,0);x2.stroke();return x2.createPattern(c2,"repeat");})()
+    : fg;
+}
+
+const fmtK = v => v>=1000000?`$${(v/1000000).toFixed(1)}M`:`$${(v/1000).toFixed(0)}K`;
+const fmtDt = s => s?new Date(s+"T00:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):"—";
+
+// ── Render ─────────────────────────────────────────────────────────────────
+let _savedFilters={};
+function render(){
+  const renewals=getWindowedRenewals();
+  const enriched=enrich(renewals);
+  const qr=getActiveQuarterRange();
+  const windowLabel=qr?`Q${localStorage.getItem("demoQuarter").split(":")[0]} ${localStorage.getItem("demoQuarter").split(":")[1]} filter`:`${DAYS_WINDOW}-day window`;
+  document.getElementById("metaText").textContent=`Demo Mode · ${enriched.length} renewals · ${windowLabel}`;
+
+  // Aggregate stats
+  const open=enriched.filter(r=>r.stage!=="Closed Won"&&r.stage!=="Closed Lost");
+  const totalARR=open.reduce((s,r)=>s+r.arr,0);
+  const committed=enriched.filter(r=>r.stage==="Sales Complete"||r.stage==="Closed Won").reduce((s,r)=>s+r.arr,0);
+  const behind=open.filter(r=>r._behind).length;
+  const urgent=open.filter(r=>r._milestone.level===1&&r._behind).length;
+  const atRiskCount=open.filter(r=>r.atRisk||r.overdueAR>0).length;
+
+  // Charts data
+  const byProduct={}, byStage={};
+  open.forEach(r=>{
+    byProduct[r.product]=(byProduct[r.product]||0)+r.arr;
+    byStage[r.stage]=(byStage[r.stage]||0)+1;
+  });
+  const prodLabels=Object.keys(byProduct).sort((a,b)=>byProduct[b]-byProduct[a]);
+  const stageOrder=["Discovery","Requirements","Proposal","Negotiation","Procurement","Sales Complete"];
+  const stageLabels=Object.keys(byStage).sort((a,b)=>{const ia=stageOrder.indexOf(a),ib=stageOrder.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib);});
+
+  // Monthly trend (last 6 months)
+  const months=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(TODAY); d.setMonth(d.getMonth()-i);
+    months.push({label:d.toLocaleDateString(undefined,{month:"short",year:"2-digit"}),yr:d.getFullYear(),mo:d.getMonth()+1});
+  }
+  const monthlyARR=months.map(m=>enriched.filter(r=>r.stage==="Closed Won"&&new Date(r.close).getFullYear()===m.yr&&new Date(r.close).getMonth()+1===m.mo).reduce((s,r)=>s+r.arr,0)||Math.random()*300000+80000);
+
+  const _dm=document.documentElement.classList.contains("dark");
+
+  // Live owners for dropdown
+  const liveOwners=[...new Set(enriched.map(r=>r.owner))].sort();
+
+  const saved=_savedFilters;
+  document.getElementById("content").innerHTML=`
+  <div class="cards">
+    <div class="card orange"><div class="lbl">Open Pipeline ARR</div><div class="val">${fmtK(totalARR)}</div><div class="sub">${open.length} open renewals · ${windowLabel}</div></div>
+    <div class="card green"><div class="lbl">Committed ARR</div><div class="val">${fmtK(committed)}</div><div class="sub">Sales Complete + Closed Won</div></div>
+    <div class="card red"><div class="lbl">Behind Pace</div><div class="val">${behind}</div><div class="sub">${urgent} urgent (T-30 behind)</div></div>
+    <div class="card amber"><div class="lbl">At Risk Accounts</div><div class="val">${atRiskCount}</div><div class="sub">CS risk flag or overdue AR</div></div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-box"><h3>Renewals by Product (Open ARR)</h3><div class="chart-wrap"><canvas id="prodChart"></canvas></div></div>
+    <div class="chart-box"><h3>Renewals by Stage</h3><div class="chart-wrap"><canvas id="stageChart"></canvas></div></div>
+  </div>
+
+  <div class="filters">
+    <label>Milestone</label>
+    <select id="fMilestone">
+      <option value="">All</option>
+      <option value="OVERDUE">Overdue</option>
+      <option value="T-30">T-30</option>
+      <option value="T-60">T-60</option>
+      <option value="T-90">T-90</option>
+      <option value="T-120">T-120</option>
+      <option value="T-145">T-145</option>
+      <option value="Early">Early</option>
+    </select>
+    <label>Product</label>
+    <select id="fProduct"><option value="">All</option>${prodLabels.map(p=>`<option value="${p}">${p}</option>`).join("")}</select>
+    <label>Stage</label>
+    <select id="fStage"><option value="">All</option>${stageLabels.map(s=>`<option value="${s}">${s}</option>`).join("")}</select>
+    <label>Owner</label>
+    <select id="fOwner"><option value="">All</option></select>
+    <button class="flt-btn" id="fBehind">Behind Only</button>
+    <button class="flt-btn" id="fRisk">At Risk Only</button>
+  </div>
+
+  <div class="tbl-box" id="tblBox"></div>`;
+
+  // Restore saved filters
+  if(saved.milestone) document.getElementById("fMilestone").value=saved.milestone;
+  if(saved.product)   document.getElementById("fProduct").value=saved.product;
+  if(saved.stage)     document.getElementById("fStage").value=saved.stage;
+  if(saved.owner)     document.getElementById("fOwner").value=saved.owner;
+  if(saved.behind)    document.getElementById("fBehind").classList.add("active");
+  if(saved.risk)      document.getElementById("fRisk").classList.add("active");
+
+  // Owner dropdown grouped by manager
+  const ownerSel=document.getElementById("fOwner");
+  Object.keys(MANAGER_MAP).sort().forEach(mgr=>{
+    const members=(MANAGER_MAP[mgr]||[]).filter(n=>liveOwners.includes(n));
+    if(!members.length) return;
+    ownerSel.add(new Option("👥 "+mgr+" (Whole Team)","mgr:"+mgr));
+    members.sort().forEach(n=>ownerSel.add(new Option("    "+n,n)));
+  });
+  if(saved.owner) ownerSel.value=saved.owner;
+
+  // Charts
+  applyChartDefaults();
+  mkChart("prodChart",{type:"bar",data:{labels:prodLabels,datasets:[{data:prodLabels.map(p=>byProduct[p]),minBarLength:4,backgroundColor:_dm?mkStripes("#3B2845","#F58220"):"#F58220",borderColor:"transparent",borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>" "+fmtK(c.parsed.y)}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>fmtK(v)}}}}});
+  mkChart("stageChart",{type:"bar",data:{labels:stageLabels,datasets:[{data:stageLabels.map(s=>byStage[s]),minBarLength:4,backgroundColor:_dm?"#F58220":"#3B2845",borderColor:"transparent",borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
+
+  // Filter & table
+  function applyFilters(){
+    const fm=document.getElementById("fMilestone")?.value||"";
+    const fp=document.getElementById("fProduct")?.value||"";
+    const fs=document.getElementById("fStage")?.value||"";
+    const fo=document.getElementById("fOwner")?.value||"";
+    const fb=document.getElementById("fBehind")?.classList.contains("active");
+    const fr=document.getElementById("fRisk")?.classList.contains("active");
+    _savedFilters={milestone:fm,product:fp,stage:fs,owner:fo,behind:fb,risk:fr};
+
+    let rows=enriched.filter(r=>{
+      if(fm&&r._milestone.label!==fm) return false;
+      if(fp&&r.product!==fp) return false;
+      if(fs?r.stage!==fs:(r.stage==="Closed Won"||r.stage==="Closed Lost")) return false;
+      if(fo){
+        if(fo.startsWith("mgr:")){const mgr=fo.slice(4);if(!(MANAGER_MAP[mgr]||[]).includes(r.owner))return false;}
+        else if(r.owner!==fo) return false;
+      }
+      if(fb&&!r._behind) return false;
+      if(fr&&!r.atRisk&&!r.overdueAR) return false;
+      return true;
+    });
+
+    const h=gridjs.html;
+    const M_ORDER={"OVERDUE":0,"T-30":1,"T-60":2,"T-90":3,"T-120":4,"T-145":5,"Early":6};
+    const CONF_ORDER={"At Risk":0,"Watch":1,"On Track":2,"Committed":3,"Closed Won":4};
+    const PACE_ORDER={"Behind":0,"N/A":1,"On Track":2};
+
+    // Each badge cell is {s: sortKey, label, css} so formatter and sorter both work after re-sort
+    const data=rows.map(r=>[
+      r.account,
+      r.product||"—",
+      r.stage||"—",
+      {s:M_ORDER[r._milestone.label]??9, label:r._milestone.label, css:r._milestone.css},
+      {s:PACE_ORDER[r._pace.label]??9,   label:r._pace.label,      css:r._pace.css},
+      {s:CONF_ORDER[r._confidence.label]??9, label:r._confidence.label, css:r._confidence.css},
+      {s:r.atRisk?0:1, label:r.atRisk?"⚠ Risk":"OK", css:r.atRisk?"badge-risk":"badge-ok"},
+      {s:r.overdueAR||0, label:r.overdueAR>0?fmtK(r.overdueAR):"—", css:r.overdueAR>0?"badge-ar":"badge-ok"},
+      r.arr,
+      r.upliftI||0,
+      r.upliftR||0,
+      r.close||"",
+      r._daysUntil,
+      r.owner,
+    ]);
+
+    const badgeFmt = cell => h(`<span class="badge ${cell.css}">${cell.label}</span>`);
+    const badgeSort = {compare:(a,b)=>a.s-b.s};
+
+    if(_charts._grid){try{_charts._grid.destroy();}catch(_){} delete _charts._grid;}
+    const g=new gridjs.Grid({
+      columns:[
+        {name:"Account",width:"14%"},
+        {name:"Product",width:"9%"},
+        {name:"Stage",width:"11%"},
+        {name:"Milestone",  width:"7%", formatter:badgeFmt, sort:badgeSort},
+        {name:"Pace",       width:"7%", formatter:badgeFmt, sort:badgeSort},
+        {name:"Confidence", width:"9%", formatter:badgeFmt, sort:badgeSort},
+        {name:"At Risk",    width:"6%", formatter:badgeFmt, sort:badgeSort},
+        {name:"Overdue AR", width:"8%", formatter:badgeFmt, sort:badgeSort},
+        {name:"ARR",        width:"7%", formatter:v=>fmtK(v), sort:{compare:(a,b)=>a-b}},
+        {name:"Int. Uplift",width:"7%", formatter:v=>v?`${v}%`:"—", sort:{compare:(a,b)=>a-b}},
+        {name:"Real. Uplift",width:"7%",formatter:v=>v?`${v}%`:"—", sort:{compare:(a,b)=>a-b}},
+        {name:"Close Date", width:"9%", formatter:v=>fmtDt(v)},
+        {name:"Days",       width:"5%", formatter:v=>`${v>=0?"":"−"}${Math.abs(v)}d`, sort:{compare:(a,b)=>a-b}},
+        {name:"Owner",      width:"9%"},
+      ],
+      data,
+      search:true,
+      sort:true,
+      pagination:{limit:20},
+      fixedHeader:true,
+      height:"460px",
+    });
+    g.render(document.getElementById("tblBox"));
+    _charts._grid=g;
+  }
+
+  applyFilters();
+
+  ["fMilestone","fProduct","fStage","fOwner"].forEach(id=>{
+    document.getElementById(id)?.addEventListener("change",applyFilters);
+  });
+  ["fBehind","fRisk"].forEach(id=>{
+    document.getElementById(id)?.addEventListener("click",function(){
+      this.classList.toggle("active");
+      applyFilters();
+    });
+  });
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded",function(){
+  applyChartDefaults();
+  populateQuarterDropdown();
+  document.getElementById("windowSel").value=String(DAYS_WINDOW);
+  const darkBtn=document.getElementById("darkBtn");
+  if(darkBtn&&document.documentElement.classList.contains("dark")) darkBtn.textContent="☀ Light";
+  render();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Site Pre-Flight — Demo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700;800&display=swap');
+:root{
+  --plum:#3B2845;--plum-ink:#5A3F6B;--carbon:#353A45;--frost:#C8E6ED;--parchment:#F2EDE4;
+  --navy:#7A5790;--navy-dark:#241628;--navy-mid:#9E7CB6;
+  --navy-light:rgba(200,230,237,.16);--navy-xlight:rgba(255,255,255,.05);
+  --orange:#F58220;--orange-light:rgba(245,130,32,.14);--orange-dark:#FF9A3D;
+  --fail:#FF6B6B;--fail-bg:rgba(255,107,107,.13);--fail-border:rgba(255,107,107,.34);--fail-dark:#FF9D9D;
+  --warn:#F5B942;--warn-bg:rgba(245,185,66,.13);--warn-border:rgba(245,185,66,.34);--warn-dark:#F8CE78;
+  --pass:#3FD68C;--pass-bg:rgba(63,214,140,.13);--pass-border:rgba(63,214,140,.32);--pass-dark:#79E6B0;
+  --done:#7FD3E8;--done-bg:rgba(127,211,232,.13);--done-border:rgba(127,211,232,.34);--done-dark:#A7E4F1;
+  --gray0:rgba(255,255,255,.05);--gray1:rgba(255,255,255,.06);--gray2:rgba(200,230,237,.14);
+  --gray3:#9C93AE;--gray4:#B3AAC6;--gray5:#C7BFD6;--gray7:#E4DEEC;--gray9:#F4F0F7;
+  --radius-sm:12px;--radius:20px;
+  --shadow-sm:0 2px 12px rgba(0,0,0,.30);--shadow:0 22px 55px rgba(0,0,0,.48),0 4px 16px rgba(0,0,0,.32);
+  --glass:rgba(255,255,255,.045);--glass-brd:rgba(200,230,237,.13);
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{background:#221826;}
+body{font-family:var(--font);font-size:13px;color:var(--gray9);min-height:100vh;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(1200px 620px at 82% -12%,rgba(245,130,32,.17),transparent 60%),
+    radial-gradient(1000px 720px at -6% 8%,rgba(200,230,237,.10),transparent 55%),
+    radial-gradient(900px 900px at 50% 122%,rgba(90,63,107,.38),transparent 62%),
+    linear-gradient(160deg,#2A1B33 0%,#241826 46%,#1F1926 100%);
+  background-attachment:fixed;}
+
+/* Header */
+.header{background:transparent;border-bottom:1px solid var(--glass-brd);padding:36px 44px 28px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:visible;}
+.header::before{content:'';position:absolute;inset:-40px -40px auto -40px;height:220px;background:radial-gradient(620px 200px at 22% 0,rgba(245,130,32,.22),transparent 62%),radial-gradient(500px 180px at 78% 20%,rgba(200,230,237,.14),transparent 60%);filter:blur(6px);pointer-events:none;}
+.header-left{position:relative;}
+.header-logo{display:flex;align-items:center;gap:16px;}
+.header-icon{width:54px;height:54px;border-radius:17px;background:linear-gradient(135deg,rgba(245,130,32,.95),rgba(212,110,26,.9));border:1px solid rgba(255,255,255,.28);box-shadow:0 12px 34px rgba(245,130,32,.42),inset 0 1px 0 rgba(255,255,255,.45);font-size:25px;display:flex;align-items:center;justify-content:center;}
+.header h1{font-family:'Sora',var(--font);font-size:31px;font-weight:800;letter-spacing:-1.1px;line-height:1.02;background:linear-gradient(92deg,#ffffff 0%,#F2EDE4 42%,var(--frost) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.header .sub{font-size:12px;color:rgba(242,237,228,.55);margin-top:7px;letter-spacing:.35px;}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;position:relative;}
+.header-actions{display:flex;align-items:center;gap:12px;}
+.demo-badge{background:rgba(245,130,32,.25);border:1px solid rgba(245,130,32,.5);color:#F58220;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px;}
+.logout-btn{font-size:11px;color:rgba(242,237,228,.62);background:none;border:1px solid rgba(200,230,237,.22);border-radius:10px;padding:6px 12px;cursor:pointer;font-family:var(--font);transition:all .15s;text-decoration:none;}
+.logout-btn:hover{color:#fff;border-color:var(--frost);background:rgba(200,230,237,.08);}
+
+/* Controls */
+.controls{background:rgba(33,24,40,.62);backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);border-top:1px solid var(--glass-brd);border-bottom:1px solid var(--glass-brd);padding:15px 44px;position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.ctrl-label{font-size:10px;font-weight:600;color:var(--gray3);text-transform:uppercase;letter-spacing:.7px;white-space:nowrap;}
+.presets{display:flex;gap:3px;background:rgba(255,255,255,.05);border:1px solid var(--glass-brd);border-radius:24px;padding:4px;}
+.preset-btn{padding:4px 12px;border:none;border-radius:20px;background:transparent;cursor:pointer;font-size:12px;font-weight:500;color:var(--gray5);font-family:var(--font);transition:all .15s;}
+.preset-btn:hover{color:#fff;background:rgba(255,255,255,.07);}
+.preset-btn.active{background:linear-gradient(135deg,var(--frost),#a9d9e6);color:#20313A;font-weight:700;box-shadow:0 6px 18px rgba(200,230,237,.28);}
+.divider{width:1px;height:24px;background:var(--glass-brd);flex-shrink:0;}
+.toggle-wrap{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;}
+.toggle{position:relative;width:36px;height:20px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,.16);border-radius:20px;transition:.2s;}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:white;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle input:checked+.toggle-slider{background:var(--orange);}
+.toggle input:checked+.toggle-slider:before{transform:translateX(16px);}
+.toggle-label{font-size:12px;color:var(--gray5);font-weight:500;}
+.csm-select{padding:5px 10px;border:1px solid var(--glass-brd);border-radius:10px;font-family:var(--font);font-size:12px;color:var(--gray9);background:rgba(255,255,255,.06);cursor:pointer;}
+.csm-select option{color:#222;}
+.export-btn{padding:8px 14px;background:rgba(255,255,255,.05);color:var(--frost);border:1px solid var(--glass-brd);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;white-space:nowrap;}
+.export-btn:hover{background:rgba(200,230,237,.1);border-color:var(--frost);}
+.run-btn{padding:11px 26px;background:linear-gradient(135deg,#F79438,var(--orange) 55%,#D96E12);color:white;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .18s;margin-left:auto;white-space:nowrap;box-shadow:0 8px 26px rgba(245,130,32,.48),inset 0 1px 0 rgba(255,255,255,.32);}
+.run-btn:hover{filter:brightness(1.04);transform:translateY(-2px);box-shadow:0 13px 32px rgba(245,130,32,.6),inset 0 1px 0 rgba(255,255,255,.32);}
+.run-btn:disabled{background:rgba(255,255,255,.1);color:var(--gray4);box-shadow:none;cursor:not-allowed;transform:none;}
+
+/* Stats */
+.stats-bar{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;padding:30px 44px 0;}
+.stat-card{background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow-sm);backdrop-filter:blur(12px);position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s,border-color .18s;cursor:default;}
+.stat-card:hover{transform:translateY(-3px);border-color:rgba(200,230,237,.30);box-shadow:var(--shadow);}
+.stat-card[data-section]{cursor:pointer;}
+.stat-card::after{content:'';position:absolute;width:130px;height:130px;right:-34px;top:-46px;border-radius:50%;opacity:.45;filter:blur(34px);pointer-events:none;}
+.stat-card.total::after{background:var(--navy-mid);}
+.stat-card.fail::after{background:var(--fail);}
+.stat-card.warn::after{background:var(--warn);}
+.stat-card.pass::after{background:var(--pass);}
+.stat-card.done::after{background:var(--done);}
+.stat-card.arr::after{background:var(--orange);}
+.stat-value{font-family:'Sora',var(--font);font-size:38px;font-weight:800;letter-spacing:-1.6px;line-height:1;}
+.stat-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--gray4);margin-top:9px;}
+.stat-card.total .stat-value{color:var(--navy-mid);}
+.stat-card.fail .stat-value{color:var(--fail);}
+.stat-card.warn .stat-value{color:var(--warn);}
+.stat-card.pass .stat-value{color:var(--pass);}
+.stat-card.done .stat-value{color:var(--done);}
+.stat-card.arr .stat-value{font-size:27px;padding-top:6px;background:linear-gradient(92deg,var(--frost),var(--orange));-webkit-background-clip:text;background-clip:text;color:transparent;}
+
+/* Heatmap */
+.heatmap{background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius);backdrop-filter:blur(12px);margin:24px 44px 0;padding:20px 24px;box-shadow:var(--shadow-sm);}
+.heatmap-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--gray4);margin-bottom:12px;}
+.heatmap-bars{display:flex;gap:10px;align-items:flex-end;height:80px;}
+.heatmap-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;max-width:100px;cursor:pointer;border-radius:var(--radius-sm);padding:4px;transition:background .12s;}
+.heatmap-col:hover{background:rgba(255,255,255,.05);}
+.heatmap-col.active-filter .heatmap-name{color:var(--frost);}
+.heatmap-col.active-filter .heatmap-bar{outline:2px solid var(--frost);outline-offset:1px;}
+.heatmap-bar-wrap{width:100%;display:flex;align-items:flex-end;height:50px;}
+.heatmap-bar{width:100%;border-radius:4px 4px 0 0;transition:height .5s;min-height:3px;}
+.heatmap-bar.has-fails{background:linear-gradient(180deg,#FBA24A,var(--orange));box-shadow:0 0 20px rgba(245,130,32,.5);}
+.heatmap-bar.no-fails{background:rgba(63,214,140,.4);}
+.heatmap-count{font-size:12px;font-weight:700;color:var(--gray7);}
+.heatmap-name{font-size:9px;font-weight:600;color:var(--gray3);text-align:center;line-height:1.3;text-transform:uppercase;}
+.filter-bar{border-top:1px solid var(--glass-brd);padding:10px 0 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.filter-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--glass-brd);background:rgba(255,255,255,.05);color:var(--gray5);transition:all .15s;user-select:none;}
+.filter-pill:hover{border-color:var(--frost);color:#fff;}
+.filter-pill.active{background:var(--frost);color:#20313A;border-color:var(--frost);}
+.pill-count{font-size:9px;font-weight:700;background:rgba(0,0,0,.12);border-radius:8px;padding:1px 5px;}
+.filter-pill.active .pill-count{background:rgba(255,255,255,.22);}
+.filter-clear-btn{padding:4px 10px;border:1.5px solid var(--glass-brd);border-radius:16px;background:rgba(255,255,255,.05);cursor:pointer;font-size:11px;font-weight:600;color:var(--gray5);font-family:var(--font);}
+.filter-clear-btn:hover{border-color:var(--fail);color:var(--fail);}
+
+/* Progress */
+.progress-bar{margin:16px 44px 0;background:var(--glass);border:1px solid var(--glass-brd);color:var(--frost);padding:10px 16px;display:flex;align-items:center;gap:12px;font-size:12px;font-weight:500;border-radius:var(--radius-sm);}
+.spinner{width:14px;height:14px;border:2px solid rgba(200,230,237,.2);border-top-color:var(--frost);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.progress-track{flex:1;background:rgba(255,255,255,.1);border-radius:4px;height:5px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--frost),var(--orange));transition:width .35s ease;border-radius:4px;}
+
+/* Sections */
+.section{padding:28px 44px 0;}
+.section-header{display:flex;align-items:center;gap:9px;margin-bottom:12px;cursor:pointer;user-select:none;}
+.section-title{font-family:'Sora',var(--font);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+.section-title.quick-wins{color:var(--warn);}
+.section-title.in-progress{color:var(--done);}
+.section-title.needs-action{color:var(--fail);}
+.section-count{font-size:11px;font-weight:700;background:rgba(255,255,255,.07);color:var(--gray5);border-radius:20px;padding:1px 9px;border:1px solid var(--glass-brd);}
+.section-meta{font-size:11px;color:var(--gray3);}
+.section-toggle{font-size:11px;color:var(--gray3);margin-left:auto;font-weight:600;}
+
+/* Table */
+.table-wrap{padding:0 44px 16px;}
+.table-container{background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius);backdrop-filter:blur(12px);box-shadow:var(--shadow);overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:rgba(255,255,255,.04);}
+th{padding:12px 14px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;white-space:nowrap;color:var(--gray4);border-bottom:1px solid var(--glass-brd);}
+th.c{text-align:center;}
+th.sortable{cursor:pointer;user-select:none;}
+th.sortable:hover{background:rgba(255,255,255,.05);}
+th.sortable.sorted{background:rgba(255,255,255,.06);color:#fff;}
+.sort-arrow{display:inline-block;margin-left:4px;font-size:9px;opacity:.5;vertical-align:middle;}
+.sort-arrow.active{opacity:1;color:var(--orange);}
+tbody tr.parent-row{cursor:pointer;transition:background .12s;border-bottom:1px solid rgba(255,255,255,.05);}
+tbody tr.parent-row:hover{background:rgba(200,230,237,.05);}
+tbody tr.parent-row.expanded{background:rgba(245,130,32,.07);}
+td{padding:12px 14px;vertical-align:middle;color:var(--gray7);}
+td.c{text-align:center;}
+.status-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;}
+.status-pill.FAIL{background:var(--fail-bg);color:var(--fail-dark);border:1px solid var(--fail-border);}
+.status-pill.WARN{background:var(--warn-bg);color:var(--warn-dark);border:1px solid var(--warn-border);}
+.status-pill.PASS{background:var(--pass-bg);color:var(--pass-dark);border:1px solid var(--pass-border);}
+.status-pill.DONE{background:var(--done-bg);color:var(--done-dark);border:1px solid var(--done-border);}
+.status-pill.CLOSE{background:#EAF7F0;color:#1A6640;border:1px solid #A8DFC0;}
+.acct-name{font-weight:600;font-size:13px;color:var(--gray9);}
+.date-cell{white-space:nowrap;}
+.days-badge{display:inline-block;font-size:10px;font-weight:600;background:var(--orange-light);color:var(--orange-dark);border-radius:6px;padding:2px 7px;margin-top:3px;border:1px solid rgba(245,130,32,.32);}
+.days-badge.urgent{background:var(--fail-bg);color:var(--fail);border-color:var(--fail-border);}
+.checks-row{display:flex;gap:3px;}
+.cd{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;cursor:help;flex-shrink:0;border:1px solid transparent;}
+.cd.pass{background:var(--pass-bg);color:var(--pass);border-color:var(--pass-border);}
+.cd.fail{background:var(--fail-bg);color:var(--fail);border-color:var(--fail-border);}
+.cd.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-border);}
+.cd.done{background:var(--done-bg);color:var(--done);border-color:var(--done-border);}
+.expand-btn{width:26px;height:26px;background:rgba(255,255,255,.06);border:1px solid var(--glass-brd);border-radius:6px;cursor:pointer;color:var(--gray5);font-size:11px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:var(--font);}
+.expand-btn:hover{background:rgba(200,230,237,.12);color:#fff;}
+tr.detail-row td{padding:0;background:rgba(0,0,0,.24);border-bottom:1px solid var(--glass-brd);}
+.detail-inner{padding:14px 16px;}
+.detail-notes{font-size:11px;line-height:1.9;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;border-left:3px solid;}
+.detail-notes.fail-notes{color:var(--fail-dark);background:var(--fail-bg);border-color:var(--fail);}
+.detail-notes.warn-notes{color:var(--warn-dark);background:var(--warn-bg);border-color:var(--warn);}
+.detail-sub{font-size:10px;font-weight:700;color:var(--frost);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
+.dtbl{width:100%;border-collapse:collapse;font-size:11px;border-radius:var(--radius-sm);overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid var(--glass-brd);}
+.dtbl th{padding:7px 10px;background:rgba(255,255,255,.05);color:var(--gray4);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.dtbl td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);color:var(--gray7);}
+.dtbl tr:last-child td{border-bottom:none;}
+.dtbl td.c{text-align:center;}
+.chk{font-size:13px;}
+.chk.ok{color:var(--pass);}
+.chk.bad{color:var(--fail);}
+.chk.warn{color:var(--warn);}
+.dtbl-footer{text-align:right;font-size:11px;font-weight:700;color:var(--frost);margin-top:8px;}
+.empty{padding:80px 20px;text-align:center;color:var(--gray4);}
+.empty-icon{font-size:40px;margin-bottom:10px;}
+.empty-title{font-size:14px;font-weight:600;color:var(--gray7);margin-bottom:4px;}
+.empty-sub{font-size:12px;}
+.hidden{display:none!important;}
+.page-bottom{height:32px;}
+
+/* Light theme override */
+body.light{
+  background:radial-gradient(1200px 620px at 82% -12%,rgba(245,130,32,.14),transparent 60%),
+    radial-gradient(1000px 720px at -6% 8%,rgba(200,230,237,.40),transparent 55%),
+    linear-gradient(160deg,#FBF9F4 0%,#F4EEE4 46%,#EFE9F1 100%);}
+body.light{--navy:#5A3F6B;--navy-mid:#7A5790;--navy-light:rgba(59,40,69,.12);--navy-xlight:rgba(59,40,69,.04);
+  --orange-dark:#D96E12;--fail:#d64545;--fail-bg:rgba(214,69,69,.10);--fail-border:rgba(214,69,69,.30);--fail-dark:#8F2C2C;
+  --warn:#C67A12;--warn-bg:rgba(198,122,18,.10);--warn-border:rgba(198,122,18,.30);--warn-dark:#7A4E0C;
+  --pass:#2E9E6B;--pass-bg:rgba(46,158,107,.10);--pass-border:rgba(46,158,107,.30);--pass-dark:#1C6042;
+  --done:#2C7A94;--done-bg:rgba(44,122,148,.10);--done-border:rgba(44,122,148,.30);--done-dark:#1B4E5E;
+  --gray3:#8A8194;--gray4:#6E6579;--gray5:#5A5266;--gray7:#3E3348;--gray9:#2A2233;
+  --shadow-sm:0 2px 12px rgba(59,40,69,.08);--shadow:0 22px 50px rgba(59,40,69,.15),0 4px 14px rgba(59,40,69,.08);
+  --glass:rgba(255,255,255,.74);--glass-brd:rgba(59,40,69,.10);}
+body.light .controls{background:rgba(255,255,255,.74);}
+body.light .heatmap-bar.no-fails{background:var(--pass-border);}
+body.light td{color:var(--gray7);}
+body.light .dtbl td{background:#fff;}
+body.light thead tr{background:rgba(59,40,69,.05);}
+body.light tr.parent-row:hover{background:rgba(59,40,69,.035);}
+body.light tr.detail-row td{background:rgba(59,40,69,.05);}
+body.light .expand-btn{background:rgba(59,40,69,.05);}
+body.light .sf-link{color:var(--navy);}
+body.light .detail-sub{color:var(--navy);}
+body.light .dtbl-footer{color:var(--navy);}
+body.light .dtbl th{background:rgba(59,40,69,.06);}
+body.light .filter-pill{background:#fff;}
+body.light .filter-clear-btn{background:#fff;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">
+      <div class="header-icon">🏢</div>
+      <div>
+        <h1>Multi-Site Renewal Pre-Flight</h1>
+        <div class="sub">Advantive Customer Success &nbsp;·&nbsp; Read-only &nbsp;·&nbsp; Demo Mode</div>
+      </div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-actions">
+      <span class="demo-badge">DEMO</span>
+      <button class="logout-btn" id="themeBtn" onclick="toggleTheme()">🌙 Dark</button>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <span class="ctrl-label">Timeframe</span>
+  <div class="presets" id="presets">
+    <button class="preset-btn" onclick="setPreset(this,30)">30d</button>
+    <button class="preset-btn" onclick="setPreset(this,60)">60d</button>
+    <button class="preset-btn active" onclick="setPreset(this,90)">90d</button>
+    <button class="preset-btn" onclick="setPreset(this,120)">120d</button>
+    <button class="preset-btn" onclick="setPreset(this,180)">180d</button>
+  </div>
+  <div class="divider"></div>
+  <label class="toggle-wrap">
+    <div class="toggle"><input type="checkbox" id="renewalsOnly" checked><div class="toggle-slider"></div></div>
+    <span class="toggle-label">Renewals only</span>
+  </label>
+  <select id="csmFilter" class="csm-select" onchange="applyCsmFilter()">
+    <option value="">👤 All CSMs</option>
+    <option value="Sarah Chen">Sarah Chen</option>
+    <option value="Marcus Webb">Marcus Webb</option>
+    <option value="Jordan Ellis">Jordan Ellis</option>
+    <option value="Priya Patel">Priya Patel</option>
+    <option value="Tyler Brooks">Tyler Brooks</option>
+    <option value="Kayla Morrison">Kayla Morrison</option>
+  </select>
+  <button class="export-btn" id="exportBtn" onclick="exportCSV()">⬇ CSV</button>
+  <button class="run-btn" id="runBtn" onclick="runAnalysis()">▶ Run Analysis</button>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-card total"><div class="stat-value" id="sTotal">—</div><div class="stat-label">Total Accounts</div></div>
+  <div class="stat-card fail" data-section="fail" id="card-fail" onclick="scrollToSection('failSection')"><div class="stat-value" id="sFail">—</div><div class="stat-label">⛔ Needs Fix</div></div>
+  <div class="stat-card warn" data-section="warn" id="card-warn" onclick="scrollToSection('qwSection')"><div class="stat-value" id="sWarn">—</div><div class="stat-label">⚠️ Warnings</div></div>
+  <div class="stat-card pass" data-section="pass" id="card-pass" onclick="scrollToSection('passSection')"><div class="stat-value" id="sPass">—</div><div class="stat-label">✅ Ready</div></div>
+  <div class="stat-card done" data-section="done" id="card-done" onclick="scrollToSection('doneSection')"><div class="stat-value" id="sDone">—</div><div class="stat-label">🔵 In Progress</div></div>
+  <div class="stat-card arr"><div class="stat-value" id="sArr">—</div><div class="stat-label">ARR at Risk</div></div>
+</div>
+
+<div class="heatmap hidden" id="heatmap">
+  <div class="heatmap-title">Check Failure Frequency</div>
+  <div class="heatmap-bars" id="heatmapBars"></div>
+  <div class="filter-bar" id="filterBar">
+    <span class="ctrl-label">Filter by check</span>
+    <div id="filterPills" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    <button class="filter-clear-btn hidden" id="filterClearBtn" onclick="clearFilters()">✕ Clear</button>
+  </div>
+</div>
+
+<div class="progress-bar hidden" id="progressBar">
+  <div class="spinner"></div>
+  <span id="progressMsg" style="flex:1">Loading…</span>
+  <div class="progress-track" style="width:180px"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <span id="progressPct" style="font-size:11px;min-width:32px;text-align:right;font-weight:600"></span>
+</div>
+
+<div id="emptyState" class="empty">
+  <div class="empty-icon">🔍</div>
+  <div class="empty-title">No data yet</div>
+  <div class="empty-sub">Select a timeframe and click <strong>Run Analysis</strong> to scan the pipeline.</div>
+</div>
+
+<div id="mainContent" class="hidden">
+
+  <!-- Ready -->
+  <div class="section" id="passSection">
+    <div class="section-header" onclick="toggleSection('passBody','passToggle')">
+      <span class="section-title" style="color:var(--pass-dark)">✅ Ready to Generate</span>
+      <span class="section-count" id="passCount">0</span>
+      <span class="section-toggle" id="passToggle">▸</span>
+    </div>
+    <div id="passBody" class="hidden table-wrap" style="padding-top:8px"></div>
+  </div>
+
+  <!-- Done -->
+  <div class="section" id="doneSection">
+    <div class="section-header" onclick="toggleSection('doneBody','doneToggle')">
+      <span class="section-title in-progress">🔵 Multi-Site Already Generated</span>
+      <span class="section-count" id="doneCount">0</span>
+      <span class="section-meta">— renewal already in flight</span>
+      <span class="section-toggle" id="doneToggle">▸</span>
+    </div>
+    <div id="doneBody" class="hidden table-wrap" style="padding-top:8px"></div>
+  </div>
+
+  <!-- Close to Ready -->
+  <div class="section" id="qwSection">
+    <div class="section-header" onclick="toggleSection('qwBody','qwToggle')">
+      <span class="section-title quick-wins">🟡 Close to Ready</span>
+      <span class="section-count" id="qwCount">0</span>
+      <span class="section-meta">— 1 non-C6 issue remaining</span>
+      <span class="section-toggle" id="qwToggle">▸</span>
+    </div>
+    <div id="qwBody" class="hidden table-wrap" style="padding-top:8px"></div>
+  </div>
+
+  <!-- Needs Attention -->
+  <div class="section">
+    <div class="section-header" style="cursor:default">
+      <span class="section-title needs-action">⛔ Needs Attention</span>
+      <span class="section-count" id="mainCount">0</span>
+    </div>
+  </div>
+  <div class="table-wrap" id="failSection">
+    <div class="table-container">
+      <table id="mainTable">
+        <thead><tr>
+          <th style="width:90px">Status</th>
+          <th class="sortable" id="th-name" onclick="sortMain('name')">Parent Account<span class="sort-arrow" id="sa-name">⇅</span></th>
+          <th class="c" style="width:52px">Sites</th>
+          <th class="c" style="width:52px">Opps</th>
+          <th class="c sortable sorted" id="th-date" onclick="sortMain('date')" style="width:100px">Close Date<span class="sort-arrow active" id="sa-date">↑</span></th>
+          <th class="c sortable" id="th-arr" onclick="sortMain('arr')" style="width:110px">Total ARR<span class="sort-arrow" id="sa-arr">⇅</span></th>
+          <th style="width:160px">Checks</th>
+          <th class="c sortable" id="th-issues" onclick="sortMain('issues')" style="width:60px">Issues<span class="sort-arrow" id="sa-issues">⇅</span></th>
+          <th class="sortable" id="th-owner" onclick="sortMain('owner')" style="width:130px">Owner<span class="sort-arrow" id="sa-owner">⇅</span></th>
+          <th style="width:36px"></th>
+        </tr></thead>
+        <tbody id="mainBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+<div class="page-bottom"></div>
+
+<script>
+// ── Theme ────────────────────────────────────────────────────────────────
+let _light = localStorage.getItem('msp_demo_theme')==='light';
+function applyTheme(){ document.body.className=_light?'light':''; document.getElementById('themeBtn').textContent=_light?'🌙 Dark':'☀️ Light'; }
+function toggleTheme(){ _light=!_light; localStorage.setItem('msp_demo_theme',_light?'light':'dark'); applyTheme(); }
+applyTheme();
+
+// ── Preset ───────────────────────────────────────────────────────────────
+function setPreset(btn,d){
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── Constants ────────────────────────────────────────────────────────────
+const CHECK_TIPS=['C1: All opps share the same close date','C2: All opps share the same Bill-To account','C3: All opps share the same billing address','C4: Each child site has its own shipping address','C5: Each opp has an IT Technical Buyer contact role','C6: All primary quotes have consistent payment terms'];
+const CHECK_SHORT=['C1','C2','C3','C4','C5','C6'];
+const CHECK_NAMES=['Date Align','Bill-To','Billing Addr','Ship Addr','Contact Role','Pay Terms'];
+
+const TODAY = new Date('2026-07-21T00:00:00');
+function daysUntil(s){ if(!s)return null; return Math.round((new Date(s+'T00:00:00')-TODAY)/864e5); }
+const fmtDate=s=>{if(!s)return'—';const[y,m,d]=s.split('-');return m+'/'+d+'/'+y.slice(2);};
+const fmtArr=v=>{if(!v&&v!==0)return'—';if(v>=1e6)return'$'+(v/1e6).toFixed(2)+'M';return '$'+Math.round(v).toLocaleString('en-US');};
+const fmtArrFull=v=>!v&&v!==0?'—':'$'+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=s=>s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):'';
+
+// ── Fake Data ────────────────────────────────────────────────────────────
+// checks array: ['pass'|'fail'|'warn'] for C1-C6
+// opps: array of child opp data
+const FAKE_ACCOUNTS = [
+  // PASS
+  { id:'a01', name:'Meridian Global Corp', status:'PASS', sites:3, close:'2026-08-12', arr:420000,
+    owner:'Sarah Chen', csm:'Sarah Chen',
+    checks:['pass','pass','pass','pass','warn','pass'],
+    details:['C5: 1 opp missing IT Technical Buyer contact role'],
+    opps:[
+      {name:'Meridian Global Corp - Chicago',close:'2026-08-12',arr:148000,bt:'Meridian Global Corp',billing:'✓',shipping:'✓',contact:'⚠',payment:'Net 30'},
+      {name:'Meridian Global Corp - Houston',close:'2026-08-12',arr:136000,bt:'Meridian Global Corp',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+      {name:'Meridian Global Corp - Phoenix',close:'2026-08-12',arr:136000,bt:'Meridian Global Corp',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+    ]},
+  { id:'a02', name:'Cascade Technologies', status:'PASS', sites:2, close:'2026-08-28', arr:185000,
+    owner:'Marcus Webb', csm:'Marcus Webb',
+    checks:['pass','pass','pass','pass','pass','pass'],
+    details:[],
+    opps:[
+      {name:'Cascade Technologies - Seattle',close:'2026-08-28',arr:98000,bt:'Cascade Technologies Inc',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 45'},
+      {name:'Cascade Technologies - Portland',close:'2026-08-28',arr:87000,bt:'Cascade Technologies Inc',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 45'},
+    ]},
+  { id:'a03', name:'Pinnacle Healthcare Network', status:'PASS', sites:4, close:'2026-09-05', arr:612000,
+    owner:'Priya Patel', csm:'Priya Patel',
+    checks:['pass','pass','pass','pass','warn','pass'],
+    details:['C5: 2 opps missing IT Technical Buyer contact role'],
+    opps:[
+      {name:'Pinnacle Healthcare - Atlanta',close:'2026-09-05',arr:168000,bt:'Pinnacle Healthcare Network',billing:'✓',shipping:'✓',contact:'⚠',payment:'Net 30'},
+      {name:'Pinnacle Healthcare - Miami',close:'2026-09-05',arr:152000,bt:'Pinnacle Healthcare Network',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+      {name:'Pinnacle Healthcare - Tampa',close:'2026-09-05',arr:148000,bt:'Pinnacle Healthcare Network',billing:'✓',shipping:'✓',contact:'⚠',payment:'Net 30'},
+      {name:'Pinnacle Healthcare - Orlando',close:'2026-09-05',arr:144000,bt:'Pinnacle Healthcare Network',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+    ]},
+
+  // DONE (already generated)
+  { id:'a04', name:'Magellan Pharma Group', status:'DONE', sites:4, close:'2026-08-01', arr:548000,
+    owner:'Jordan Ellis', csm:'Jordan Ellis',
+    checks:['done','done','done','done','done','done'],
+    details:['Multi-site renewal already generated — opp in progress'],
+    opps:[
+      {name:'Magellan Pharma - Boston',close:'2026-08-01',arr:148000,bt:'Magellan Pharma Group',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+      {name:'Magellan Pharma - New York',close:'2026-08-01',arr:142000,bt:'Magellan Pharma Group',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+      {name:'Magellan Pharma - Philadelphia',close:'2026-08-01',arr:138000,bt:'Magellan Pharma Group',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+      {name:'Magellan Pharma - Baltimore',close:'2026-08-01',arr:120000,bt:'Magellan Pharma Group',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+    ]},
+  { id:'a05', name:'Pacific Import Co.', status:'DONE', sites:3, close:'2026-07-30', arr:276000,
+    owner:'Tyler Brooks', csm:'Tyler Brooks',
+    checks:['done','done','done','done','done','done'],
+    details:['Multi-site renewal already generated — opp in progress'],
+    opps:[
+      {name:'Pacific Import - Los Angeles',close:'2026-07-30',arr:98000,bt:'Pacific Import Co.',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 45'},
+      {name:'Pacific Import - San Diego',close:'2026-07-30',arr:92000,bt:'Pacific Import Co.',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 45'},
+      {name:'Pacific Import - San Francisco',close:'2026-07-30',arr:86000,bt:'Pacific Import Co.',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 45'},
+    ]},
+
+  // CLOSE (1 non-C6 issue)
+  { id:'a06', name:'Summit Retail Group', status:'CLOSE', sites:3, close:'2026-08-19', arr:298000,
+    owner:'Kayla Morrison', csm:'Kayla Morrison',
+    checks:['pass','pass','pass','fail','warn','pass'],
+    details:['C4: 1 opp (Summit Retail - Denver) missing shipping address','C5: 1 opp missing IT Technical Buyer contact role'],
+    opps:[
+      {name:'Summit Retail - Denver',close:'2026-08-19',arr:108000,bt:'Summit Retail Group',billing:'✓',shipping:'✗',contact:'⚠',payment:'Net 30'},
+      {name:'Summit Retail - Salt Lake City',close:'2026-08-19',arr:98000,bt:'Summit Retail Group',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+      {name:'Summit Retail - Albuquerque',close:'2026-08-19',arr:92000,bt:'Summit Retail Group',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+    ]},
+  { id:'a07', name:'Apex Logistics Partners', status:'CLOSE', sites:2, close:'2026-09-10', arr:167000,
+    owner:'Sarah Chen', csm:'Sarah Chen',
+    checks:['pass','pass','pass','pass','warn','fail'],
+    details:['C6: Mixed payment terms — Net 30 / Net 45','C5: 1 opp missing IT Technical Buyer contact role'],
+    opps:[
+      {name:'Apex Logistics - Dallas',close:'2026-09-10',arr:89000,bt:'Apex Logistics Partners',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+      {name:'Apex Logistics - Austin',close:'2026-09-10',arr:78000,bt:'Apex Logistics Partners',billing:'✓',shipping:'✓',contact:'⚠',payment:'Net 45'},
+    ]},
+
+  // WARN (2+ issues but no hard fails except C5/C6)
+  { id:'a08', name:'Vantage Financial Services', status:'WARN', sites:4, close:'2026-08-25', arr:445000,
+    owner:'Marcus Webb', csm:'Marcus Webb',
+    checks:['pass','pass','pass','warn','warn','warn'],
+    details:['C4: All 4 opps share the same shipping address — may have been overwritten','C5: 3 opps missing IT Technical Buyer contact role','C6: No payment terms found on 2 opps'],
+    opps:[
+      {name:'Vantage Financial - New York',close:'2026-08-25',arr:128000,bt:'Vantage Financial Services',billing:'✓',shipping:'⚠',contact:'⚠',payment:'—'},
+      {name:'Vantage Financial - Chicago',close:'2026-08-25',arr:118000,bt:'Vantage Financial Services',billing:'✓',shipping:'⚠',contact:'⚠',payment:'Net 30'},
+      {name:'Vantage Financial - Boston',close:'2026-08-25',arr:108000,bt:'Vantage Financial Services',billing:'✓',shipping:'⚠',contact:'⚠',payment:'—'},
+      {name:'Vantage Financial - Washington DC',close:'2026-08-25',arr:91000,bt:'Vantage Financial Services',billing:'✓',shipping:'⚠',contact:'✓',payment:'Net 30'},
+    ]},
+
+  // FAIL accounts
+  { id:'a09', name:'NovaTech Industries', status:'FAIL', sites:5, close:'2026-08-08', arr:678000,
+    owner:'Jordan Ellis', csm:'Jordan Ellis',
+    checks:['fail','pass','pass','pass','warn','pass'],
+    details:['C1: 3 different close dates found — 2026-08-08, 2026-08-15, 2026-09-01','C5: 2 opps missing IT Technical Buyer contact role'],
+    opps:[
+      {name:'NovaTech - Minneapolis',close:'2026-08-08',arr:158000,bt:'NovaTech Industries',billing:'✓',shipping:'✓',contact:'⚠',payment:'Net 30'},
+      {name:'NovaTech - Chicago',close:'2026-08-15',arr:148000,bt:'NovaTech Industries',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+      {name:'NovaTech - Detroit',close:'2026-08-08',arr:138000,bt:'NovaTech Industries',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+      {name:'NovaTech - Cleveland',close:'2026-09-01',arr:128000,bt:'NovaTech Industries',billing:'✓',shipping:'✓',contact:'⚠',payment:'Net 30'},
+      {name:'NovaTech - Indianapolis',close:'2026-08-08',arr:106000,bt:'NovaTech Industries',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+    ]},
+  { id:'a10', name:'Sterling Medical Group', status:'FAIL', sites:3, close:'2026-09-15', arr:389000,
+    owner:'Priya Patel', csm:'Priya Patel',
+    checks:['pass','fail','pass','pass','warn','pass'],
+    details:['C2: Mixed Bill-To accounts — Sterling Medical Group / Sterling Medical Holdings LLC','C5: 1 opp missing IT Technical Buyer contact role'],
+    opps:[
+      {name:'Sterling Medical - Nashville',close:'2026-09-15',arr:142000,bt:'Sterling Medical Group',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 45'},
+      {name:'Sterling Medical - Memphis',close:'2026-09-15',arr:128000,bt:'Sterling Medical Holdings LLC',billing:'✓',shipping:'✓',contact:'⚠',payment:'Net 45'},
+      {name:'Sterling Medical - Knoxville',close:'2026-09-15',arr:119000,bt:'Sterling Medical Group',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 45'},
+    ]},
+  { id:'a11', name:'Quantum Systems Inc', status:'FAIL', sites:4, close:'2026-08-30', arr:512000,
+    owner:'Tyler Brooks', csm:'Tyler Brooks',
+    checks:['pass','pass','fail','fail','warn','pass'],
+    details:['C3: 2 opps (Quantum - Austin, Quantum - San Antonio) missing billing address','C4: 3 opps missing shipping address','C5: 2 opps missing IT Technical Buyer contact role'],
+    opps:[
+      {name:'Quantum Systems - Dallas',close:'2026-08-30',arr:148000,bt:'Quantum Systems Inc',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+      {name:'Quantum Systems - Austin',close:'2026-08-30',arr:136000,bt:'Quantum Systems Inc',billing:'✗',shipping:'✗',contact:'⚠',payment:'Net 30'},
+      {name:'Quantum Systems - San Antonio',close:'2026-08-30',arr:124000,bt:'Quantum Systems Inc',billing:'✗',shipping:'✗',contact:'⚠',payment:'Net 30'},
+      {name:'Quantum Systems - Houston',close:'2026-08-30',arr:104000,bt:'Quantum Systems Inc',billing:'✓',shipping:'✗',contact:'✓',payment:'Net 30'},
+    ]},
+  { id:'a12', name:'Harbor Point Retail', status:'FAIL', sites:2, close:'2026-08-05', arr:143000,
+    owner:'Kayla Morrison', csm:'Kayla Morrison',
+    checks:['fail','pass','pass','pass','pass','fail'],
+    details:['C1: 2 different close dates — 2026-08-05 / 2026-08-12','C6: Mixed payment terms — Net 30 / Due on Receipt'],
+    opps:[
+      {name:'Harbor Point - Baltimore',close:'2026-08-05',arr:78000,bt:'Harbor Point Retail',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+      {name:'Harbor Point - Richmond',close:'2026-08-12',arr:65000,bt:'Harbor Point Retail',billing:'✓',shipping:'✓',contact:'✓',payment:'Due on Receipt'},
+    ]},
+  { id:'a13', name:'Bluewave Capital', status:'FAIL', sites:3, close:'2026-09-22', arr:267000,
+    owner:'Sarah Chen', csm:'Sarah Chen',
+    checks:['pass','fail','pass','pass','warn','pass'],
+    details:['C2: 2 opps missing Bill-To account','C5: 2 opps missing IT Technical Buyer contact role'],
+    opps:[
+      {name:'Bluewave Capital - San Francisco',close:'2026-09-22',arr:102000,bt:'Bluewave Capital LLC',billing:'✓',shipping:'✓',contact:'⚠',payment:'Net 30'},
+      {name:'Bluewave Capital - Los Angeles',close:'2026-09-22',arr:92000,bt:'—',billing:'✓',shipping:'✓',contact:'⚠',payment:'Net 30'},
+      {name:'Bluewave Capital - San Diego',close:'2026-09-22',arr:73000,bt:'—',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+    ]},
+  { id:'a14', name:'Crestview Hotels LLC', status:'FAIL', sites:6, close:'2026-08-18', arr:834000,
+    owner:'Marcus Webb', csm:'Marcus Webb',
+    checks:['fail','pass','fail','fail','warn','pass'],
+    details:['C1: 2 different close dates — 2026-08-18 / 2026-08-25','C3: 2 opps missing billing address','C4: 3 opps missing shipping address','C5: 4 opps missing IT Technical Buyer contact role'],
+    opps:[
+      {name:'Crestview Hotels - Las Vegas',close:'2026-08-18',arr:168000,bt:'Crestview Hotels LLC',billing:'✓',shipping:'✗',contact:'⚠',payment:'Net 30'},
+      {name:'Crestview Hotels - Phoenix',close:'2026-08-18',arr:152000,bt:'Crestview Hotels LLC',billing:'✓',shipping:'✗',contact:'⚠',payment:'Net 30'},
+      {name:'Crestview Hotels - Denver',close:'2026-08-25',arr:142000,bt:'Crestview Hotels LLC',billing:'✗',shipping:'✓',contact:'⚠',payment:'Net 30'},
+      {name:'Crestview Hotels - Salt Lake City',close:'2026-08-18',arr:132000,bt:'Crestview Hotels LLC',billing:'✗',shipping:'✗',contact:'⚠',payment:'Net 30'},
+      {name:'Crestview Hotels - Albuquerque',close:'2026-08-18',arr:122000,bt:'Crestview Hotels LLC',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+      {name:'Crestview Hotels - Tucson',close:'2026-08-25',arr:118000,bt:'Crestview Hotels LLC',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+    ]},
+  { id:'a15', name:'Frontier Telecom Co', status:'FAIL', sites:2, close:'2026-09-08', arr:321000,
+    owner:'Jordan Ellis', csm:'Jordan Ellis',
+    checks:['pass','pass','pass','pass','warn','fail'],
+    details:['C6: Mixed payment terms — Net 30 / Net 60','C5: 1 opp missing IT Technical Buyer contact role'],
+    opps:[
+      {name:'Frontier Telecom - Kansas City',close:'2026-09-08',arr:172000,bt:'Frontier Telecom Co',billing:'✓',shipping:'✓',contact:'✓',payment:'Net 30'},
+      {name:'Frontier Telecom - St. Louis',close:'2026-09-08',arr:149000,bt:'Frontier Telecom Co',billing:'✓',shipping:'✓',contact:'⚠',payment:'Net 60'},
+    ]},
+];
+
+let activeFilters=new Set();
+let csmFilterVal='';
+let mainSortCol='date', mainSortDir='asc';
+let expanded=new Set();
+
+function getFiltered(){
+  let items=FAKE_ACCOUNTS.filter(a=>{
+    if(csmFilterVal&&a.csm!==csmFilterVal) return false;
+    if(activeFilters.size===0) return true;
+    // show if account has a fail/warn on any active filter check
+    for(const fi of activeFilters){
+      const idx=parseInt(fi);
+      if(a.checks[idx]==='fail'||a.checks[idx]==='warn') return true;
+    }
+    return false;
+  });
+  return items;
+}
+
+// ── Sort ──────────────────────────────────────────────────────────────────
+function sortMain(col){
+  if(mainSortCol===col) mainSortDir=mainSortDir==='asc'?'desc':'asc';
+  else{ mainSortCol=col; mainSortDir='asc'; }
+  ['name','date','arr','issues','owner'].forEach(c=>{
+    const th=document.getElementById('th-'+c);
+    const sa=document.getElementById('sa-'+c);
+    if(!th||!sa) return;
+    th.classList.toggle('sorted',c===col);
+    sa.classList.toggle('active',c===col);
+    sa.textContent=c===col?(mainSortDir==='asc'?'↑':'↓'):'⇅';
+  });
+  renderMain();
+}
+
+function sortItems(items){
+  return [...items].sort((a,b)=>{
+    let va,vb;
+    if(mainSortCol==='name'){ va=a.name; vb=b.name; }
+    else if(mainSortCol==='date'){ va=a.close||''; vb=b.close||''; }
+    else if(mainSortCol==='arr'){ va=a.arr; vb=b.arr; }
+    else if(mainSortCol==='issues'){ va=a.checks.filter(c=>c==='fail'||c==='warn').length; vb=b.checks.filter(c=>c==='fail'||c==='warn').length; }
+    else if(mainSortCol==='owner'){ va=a.owner; vb=b.owner; }
+    if(va<vb) return mainSortDir==='asc'?-1:1;
+    if(va>vb) return mainSortDir==='asc'?1:-1;
+    return 0;
+  });
+}
+
+// ── Render table ──────────────────────────────────────────────────────────
+function buildTable(items, tbodyId){
+  const tbody=document.getElementById(tbodyId);
+  if(!tbody) return;
+  tbody.innerHTML='';
+  if(!items.length){ tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--gray3)">No accounts in this group</td></tr>'; return; }
+  items.forEach(a=>{
+    const du=daysUntil(a.close);
+    const daysBadge=du===null?'':du<0?`<div class="days-badge urgent">${Math.abs(du)}d overdue</div>`:`<div class="days-badge">${du}d away</div>`;
+    const issues=a.checks.filter((c,i)=>i!==4&&(c==='fail'||c==='warn')).length;
+    const checksHtml=a.checks.map((c,i)=>
+      c==='done'?`<div class="cd done" title="${CHECK_TIPS[i]}">✓</div>`
+      :c==='pass'?`<div class="cd pass" title="${CHECK_TIPS[i]}">${CHECK_SHORT[i]}</div>`
+      :c==='fail'?`<div class="cd fail" title="${CHECK_TIPS[i]}">${CHECK_SHORT[i]}</div>`
+      :`<div class="cd warn" title="${CHECK_TIPS[i]}">${CHECK_SHORT[i]}</div>`
+    ).join('');
+    const isExp=expanded.has(a.id);
+    const row=document.createElement('tr');
+    row.className='parent-row'+(isExp?' expanded':'');
+    row.dataset.id=a.id;
+    row.innerHTML=`
+      <td><span class="status-pill ${a.status}">${a.status==='PASS'?'✅ PASS':a.status==='DONE'?'🔵 DONE':a.status==='CLOSE'?'🟡 CLOSE':a.status==='WARN'?'⚠ WARN':'⛔ FAIL'}</span></td>
+      <td><div class="acct-name">${esc(a.name)}</div></td>
+      <td class="c">${a.sites}</td>
+      <td class="c">${a.opps.length}</td>
+      <td class="c date-cell">${fmtDate(a.close)}${daysBadge}</td>
+      <td class="c">${fmtArr(a.arr)}</td>
+      <td><div class="checks-row">${checksHtml}</div></td>
+      <td class="c"><span style="font-weight:700;color:${issues===0?'var(--pass)':issues===1?'var(--warn)':'var(--fail)'}">${issues}</span></td>
+      <td>${esc(a.owner)}</td>
+      <td><button class="expand-btn" id="ebtn-${a.id}">${isExp?'▾':'▸'}</button></td>`;
+    tbody.appendChild(row);
+    row.addEventListener('click',()=>toggleRow(a.id,tbodyId,items));
+
+    // Detail row
+    const dr=document.createElement('tr');
+    dr.className='detail-row'+(isExp?'':' hidden');
+    dr.id='detail-'+a.id;
+    const notesHtml=a.details.length?`<div class="detail-notes ${a.details.some(d=>d.startsWith('C')?a.checks[parseInt(d[1])-1]==='fail':false)?'fail-notes':'warn-notes'}">${a.details.map(d=>`• ${esc(d)}`).join('<br>')}</div>`:'';
+    const oppsHtml=a.opps.map(o=>`
+      <tr>
+        <td>${esc(o.name)}</td>
+        <td class="c">${fmtDate(o.close)}</td>
+        <td class="c">${fmtArrFull(o.arr)}</td>
+        <td class="c">${esc(o.bt||'—')}</td>
+        <td class="c"><span class="chk ${o.billing==='✓'?'ok':o.billing==='⚠'?'warn':'bad'}">${o.billing}</span></td>
+        <td class="c"><span class="chk ${o.shipping==='✓'?'ok':o.shipping==='⚠'?'warn':'bad'}">${o.shipping}</span></td>
+        <td class="c"><span class="chk ${o.contact==='✓'?'ok':o.contact==='⚠'?'warn':'bad'}">${o.contact}</span></td>
+        <td class="c">${esc(o.payment||'—')}</td>
+      </tr>`).join('');
+    dr.innerHTML=`<td colspan="10"><div class="detail-inner">
+      ${notesHtml}
+      <div class="detail-sub">Child Opportunities (${a.opps.length})</div>
+      <table class="dtbl">
+        <thead><tr><th>Opportunity</th><th class="c">Close Date</th><th class="c">ARR</th><th>Bill-To</th><th class="c">C3 Billing</th><th class="c">C4 Shipping</th><th class="c">C5 Contact</th><th>C6 Pay Terms</th></tr></thead>
+        <tbody>${oppsHtml}</tbody>
+      </table>
+      <div class="dtbl-footer">Total ARR: ${fmtArrFull(a.arr)}</div>
+    </div></td>`;
+    tbody.appendChild(dr);
+  });
+}
+
+function toggleRow(id, tbodyId, items){
+  if(expanded.has(id)) expanded.delete(id);
+  else expanded.add(id);
+  buildTable(items, tbodyId);
+}
+
+// ── Main render ───────────────────────────────────────────────────────────
+function renderMain(){
+  const all=getFiltered();
+  const pass=all.filter(a=>a.status==='PASS');
+  const done=all.filter(a=>a.status==='DONE');
+  const close=all.filter(a=>a.status==='CLOSE');
+  const fail=sortItems(all.filter(a=>a.status==='FAIL'||a.status==='WARN'));
+
+  document.getElementById('sTotal').textContent=all.length;
+  document.getElementById('sFail').textContent=all.filter(a=>a.status==='FAIL').length;
+  document.getElementById('sWarn').textContent=all.filter(a=>a.status==='WARN'||a.status==='CLOSE').length;
+  document.getElementById('sPass').textContent=pass.length;
+  document.getElementById('sDone').textContent=done.length;
+  const atRiskARR=all.filter(a=>a.status==='FAIL'||a.status==='WARN').reduce((s,a)=>s+a.arr,0);
+  document.getElementById('sArr').textContent=fmtArr(atRiskARR);
+
+  document.getElementById('passCount').textContent=pass.length;
+  document.getElementById('doneCount').textContent=done.length;
+  document.getElementById('qwCount').textContent=close.length;
+  document.getElementById('mainCount').textContent=fail.length;
+
+  // Build section tables
+  const passTable=`<div class="table-container"><table><thead><tr>
+    <th>Account</th><th class="c">Sites</th><th class="c">Opps</th>
+    <th class="c">Close Date</th><th class="c">ARR</th><th>Checks</th><th>Owner</th><th style="width:36px"></th>
+  </tr></thead><tbody id="passBody2"></tbody></table></div>`;
+  document.getElementById('passBody').innerHTML=passTable;
+  buildTable(pass,'passBody2');
+
+  const doneTable=`<div class="table-container"><table><thead><tr>
+    <th>Account</th><th class="c">Sites</th><th class="c">Opps</th>
+    <th class="c">Close Date</th><th class="c">ARR</th><th>Checks</th><th>Owner</th><th style="width:36px"></th>
+  </tr></thead><tbody id="doneBody2"></tbody></table></div>`;
+  document.getElementById('doneBody').innerHTML=doneTable;
+  buildTable(done,'doneBody2');
+
+  const qwTable=`<div class="table-container"><table><thead><tr>
+    <th>Account</th><th class="c">Sites</th><th class="c">Opps</th>
+    <th class="c">Close Date</th><th class="c">ARR</th><th>Checks</th><th>Owner</th><th style="width:36px"></th>
+  </tr></thead><tbody id="qwBody2"></tbody></table></div>`;
+  document.getElementById('qwBody').innerHTML=qwTable;
+  buildTable(close,'qwBody2');
+
+  buildTable(fail,'mainBody');
+  renderHeatmap(all);
+}
+
+// ── Heatmap ───────────────────────────────────────────────────────────────
+function renderHeatmap(items){
+  const counts=CHECK_SHORT.map((_,i)=>items.filter(a=>a.checks[i]==='fail'||a.checks[i]==='warn').length);
+  const max=Math.max(...counts,1);
+  const bars=document.getElementById('heatmapBars');
+  bars.innerHTML=CHECK_SHORT.map((c,i)=>{
+    const h=Math.max(4,Math.round((counts[i]/max)*44));
+    const hasFails=counts[i]>0;
+    const isActive=activeFilters.has(String(i));
+    return `<div class="heatmap-col${isActive?' active-filter':''}" data-ci="${i}" onclick="toggleCheckFilter(${i})">
+      <div class="heatmap-bar-wrap"><div class="heatmap-bar ${hasFails?'has-fails':'no-fails'}" style="height:${h}px"></div></div>
+      <div class="heatmap-count">${counts[i]}</div>
+      <div class="heatmap-name">${CHECK_NAMES[i]}</div>
+    </div>`;
+  }).join('');
+
+  // Filter pills
+  const pills=document.getElementById('filterPills');
+  pills.innerHTML=CHECK_SHORT.map((c,i)=>{
+    const n=counts[i];
+    const isActive=activeFilters.has(String(i));
+    return `<div class="filter-pill${isActive?' active':''}" onclick="toggleCheckFilter(${i})">${c} — ${CHECK_NAMES[i]} <span class="pill-count">${n}</span></div>`;
+  }).join('');
+  document.getElementById('filterClearBtn').classList.toggle('hidden',activeFilters.size===0);
+}
+
+function toggleCheckFilter(ci){
+  const k=String(ci);
+  if(activeFilters.has(k)) activeFilters.delete(k);
+  else activeFilters.add(k);
+  renderMain();
+}
+function clearFilters(){ activeFilters.clear(); renderMain(); }
+function applyCsmFilter(){ csmFilterVal=document.getElementById('csmFilter').value; renderMain(); }
+
+// ── Section toggle ────────────────────────────────────────────────────────
+function toggleSection(bodyId, toggleId){
+  const body=document.getElementById(bodyId);
+  const tog=document.getElementById(toggleId);
+  const hidden=body.classList.toggle('hidden');
+  if(tog) tog.textContent=hidden?'▸':'▾';
+}
+function scrollToSection(id){
+  const el=document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── Progress fake animation ───────────────────────────────────────────────
+function setProgress(msg, pct){
+  document.getElementById('progressMsg').textContent=msg;
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressPct').textContent=pct+'%';
+}
+
+async function runAnalysis(){
+  const btn=document.getElementById('runBtn');
+  btn.disabled=true; btn.textContent='⏳ Running…';
+  document.getElementById('emptyState').classList.add('hidden');
+  document.getElementById('mainContent').classList.add('hidden');
+  document.getElementById('heatmap').classList.add('hidden');
+  document.getElementById('progressBar').classList.remove('hidden');
+
+  const steps=[
+    ['Phase 1 — discovering qualifying accounts…',12,400],
+    ['Phase 2 — loading child opportunities…',35,600],
+    ['Phase 3 — checking close date alignment (C1)…',50,500],
+    ['Phase 3 — verifying Bill-To accounts (C2)…',62,400],
+    ['Phase 3 — checking billing & shipping addresses (C3/C4)…',74,500],
+    ['Phase 3 — checking contact roles (C5)…',84,400],
+    ['Phase 3 — verifying payment terms (C6)…',93,400],
+    ['Phase 4 — classifying results…',100,300],
+  ];
+  for(const [msg,pct,delay] of steps){
+    setProgress(msg,pct);
+    await new Promise(r=>setTimeout(r,delay));
+  }
+
+  document.getElementById('progressBar').classList.add('hidden');
+  document.getElementById('mainContent').classList.remove('hidden');
+  document.getElementById('heatmap').classList.remove('hidden');
+
+  renderMain();
+
+  const now=new Date();
+  document.getElementById('exportBtn').removeAttribute('disabled');
+  btn.disabled=false; btn.textContent='▶ Run Analysis';
+}
+
+// ── CSV Export ────────────────────────────────────────────────────────────
+function exportCSV(){
+  const rows=[['Account','Status','Sites','Opps','Close Date','ARR','Issues','Owner','C1','C2','C3','C4','C5','C6']];
+  FAKE_ACCOUNTS.forEach(a=>{
+    rows.push([a.name,a.status,a.sites,a.opps.length,a.close,a.arr,
+      a.checks.filter((c,i)=>i!==4&&(c==='fail'||c==='warn')).length,
+      a.owner,...a.checks]);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:'multisite-preflight-demo.csv'});
+  a.click();
+}
+</script>
+</body>
+</html>
