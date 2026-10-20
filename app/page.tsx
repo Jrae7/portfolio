@@ -495,7 +495,7 @@ export default function Home() {
     } else if (command === "ls projects") {
       next.push("rcc/  evergreen/  multisite/  hr/");
     } else if (command === "about") {
-      next.push("Cybersecurity student at the University of South Florida · GPA 3.93 · Class of 2028.");
+      next.push("Cybersecurity student at the University of South Florida · GPA 3.93 · Class of 2027.");
     } else if (command === "contact") {
       next.push("Email: jonraesmall@gmail.com");
       next.push("LinkedIn: linkedin.com/in/jonraesmall");
@@ -578,7 +578,7 @@ export default function Home() {
         "and solving real technical problems. I enjoy programming, network",
         "security, ethical hacking, and turning ideas into useful tools.",
         "",
-        "Degree: B.S. in Cybersecurity — Expected May 2028",
+        "Degree: B.S. in Cybersecurity — Expected December 2027",
         "Academic standing: 3.93 GPA · Dean's List (2 semesters)",
         "Location: Tampa, Florida",
         "Campus life: USF CyberHerd · Whitehatters · NSBE",
@@ -598,7 +598,7 @@ export default function Home() {
             <div className="resume-contact-line"><a href="mailto:jonraesmall@gmail.com">jonraesmall@gmail.com</a><span>·</span><a href="https://www.linkedin.com/in/jonraesmall" target="_blank" rel="noreferrer">linkedin.com/in/jonraesmall</a></div>
             <section>
               <h3>EDUCATION</h3>
-              <div className="resume-heading"><strong>Bachelor of Science in Cybersecurity</strong><span>May 2028</span></div>
+              <div className="resume-heading"><strong>Bachelor of Science in Cybersecurity</strong><span>December 2027</span></div>
               <p>University of South Florida | Tampa, FL | GPA: 3.93 | Dean&apos;s List (2 Semesters)</p>
             </section>
             <section>
